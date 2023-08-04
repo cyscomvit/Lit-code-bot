@@ -1,5 +1,7 @@
 {
   "dependencies": {
+    "@google-cloud/local-auth": "^2.1.1",
+    "@googleapis/forms": "^2.0.0",
     "discord.js": "^14.12.1",
     "node-fetch": "^3.3.2"
   },

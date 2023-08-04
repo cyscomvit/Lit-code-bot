@@ -10,6 +10,8 @@ const client = new Client({
         GatewayIntentBits.MessageContent
 	],
 });
+
+
 let channelId = ''
 client.on("ready", () => {
     console.log('Logged in as ' + client.user.tag)
