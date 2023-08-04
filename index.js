@@ -24,11 +24,6 @@ let memberDetails = [
         name:'Karthik Chandrasekhar',
         siteId:'Karthik2025',
         count:0   
-    },
-    {
-        name:'Aditya Sai',
-        siteId:'AdityaSai2004',
-        count:0   
     }
 ]
 client.on("messageCreate", msg => {
