@@ -12,14 +12,15 @@ const client = new Client({
 	],
 });
 
-const SHEET_LINK = '1uP9kyrUGwV80C0Dy8NCfPlJoUcQ7zTCaAaBJgB3IqbU'
-const SHEET_API = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_LINK}/values/Sheet1?alt=json&key=${process.env.SHEET_API_KEY}`
+const SHEET_LINK = '15fwKvLzmdCGnTCtAjlcNm66Xau4_47UMq780Ez4TjUU'
+const SHEET_API = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_LINK}/values/Form%20Responses%201?alt=json&key=${process.env.SHEET_API_KEY}`
 let channelId = ''
 client.on("ready", () => {
     console.log('Logged in as ' + client.user.tag)
+    getSolveStatus('init')
     channelId = client.channels.cache.get("1136692829410820128")
     let now = new Date()
-    let timeLeft = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 16,25,0,0) - now
+    let timeLeft = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23,15,0,0) - now
     if (timeLeft < 0) {
     getSolveStatus()
     timeLeft += 86400000
@@ -81,15 +82,15 @@ function updateScore(username,score) {
 
 
 console.log
-async function getSolveStatus() {
-    let statusUpdate = "Today's LeetCode stats: \n"
+async function getSolveStatus(time) {
+    let statusUpdate = ""
     let memberdata = await fetch(SHEET_API)
     let memberJsonData = await memberdata.json()
     //console.log(memberJsonData)
     for (let i = 1; i < memberJsonData['values'].length; i++) {
         intializeJson()
-        let username = memberJsonData['values'][i][1]
-        let fullName = memberJsonData['values'][i][0]
+        let username = memberJsonData['values'][i][2]
+        let fullName = memberJsonData['values'][i][1]
         // console.log(username)
         let profileUrl = 'https://faisal-leetcode-api.cyclic.app/' + username
 
@@ -116,7 +117,13 @@ async function getSolveStatus() {
             }
         }
     }
-    channelId.send(statusUpdate)
+    if (time === "init") {
+        
+    } else if (statusUpdate === "") {
+        channelId.send("No one solved a problem today :(")
+    } else {
+        channelId.send("Today's LeetCode stats: \n" + statusUpdate)
+    }
 }
 
 
