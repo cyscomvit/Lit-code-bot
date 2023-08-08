@@ -1,3 +1,4 @@
+const { time } = require('console');
 const { Client, GatewayIntentBits } = require('discord.js')
 
 require('dotenv').config();
@@ -18,16 +19,20 @@ let channelId = ''
 client.on("ready", () => {
     console.log('Logged in as ' + client.user.tag)
     getSolveStatus('init')
-    channelId = client.channels.cache.get("1136692829410820128")
-    let now = new Date()
-    let timeLeft = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23,15,0,0) - now
-    if (timeLeft < 0) {
-    getSolveStatus()
-    timeLeft += 86400000
-}
-setTimeout(getSolveStatus, timeLeft)
+    channelId = client.channels.cache.get("1115984522522132532")
     
-})
+    let now = new Date()
+    let timeLeft = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23,55,0,0) - now
+    console.log(timeLeft)
+    if (timeLeft < 0) {
+        timeLeft += 86400000
+    }
+    setTimeout(getSolveStatus, timeLeft)
+    setInterval(getSolveStatus,86400000)
+}
+
+    
+)
 client.on("messageCreate", msg => {
     if (!msg.author.bot) {
         console.log('message received in channel')
@@ -71,18 +76,23 @@ function addUser(userName,fullName,score) {
     })
 }
 
-function updateScore(username,score) {
-    scoreObject[username]['score'] = score
-    let toWrite = JSON.stringify(scoreObject)
-    fs.writeFile('scores.json', toWrite, err => {
-        if (err) throw err
-        console.log(`Score updated for user ${username}`)
-    })
+function updateScore(names) {
+    for (let i = 0; i < names.length; i++) {
+        scoreObject[names[i][0]]['score'] = names[i][1]
+        let toWrite = JSON.stringify(scoreObject)
+        fs.writeFile('scores.json', toWrite, err => {
+            if (err) throw err
+            console.log(`Score updated for user ${names[i][0]}`)
+        })
+    }
+    
 }
 
 
 console.log
 async function getSolveStatus(time) {
+    console.log("Executing function")
+    let namesToUpdate = []
     let statusUpdate = ""
     let memberdata = await fetch(SHEET_API)
     let memberJsonData = await memberdata.json()
@@ -107,8 +117,9 @@ async function getSolveStatus(time) {
             if (score > sheetScore) {
                 if (sheetScore != 0) {
                     statusUpdate += `${fullName} solved ` + (score-sheetScore) + ` problems.\n`
+                    namesToUpdate.push([username,score])
                 }
-                updateScore(username, score)
+                
             }
         } else {
             //console.log(typeof(score))
@@ -123,6 +134,7 @@ async function getSolveStatus(time) {
         channelId.send("No one solved a problem today :(")
     } else {
         channelId.send("Today's LeetCode stats: \n" + statusUpdate)
+        updateScore(namesToUpdate)
     }
 }
 
