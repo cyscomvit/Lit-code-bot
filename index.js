@@ -19,7 +19,7 @@ let channelId = ''
 client.on("ready", () => {
     console.log('Logged in as ' + client.user.tag)
     getSolveStatus('init') // For updating the scores before automation
-    channelId = client.channels.cache.get("1136692829410820128")
+    channelId = client.channels.cache.get("1115984522522132532")
     
     let now = new Date()
     let timeLeft = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23,45,0,0) - now
