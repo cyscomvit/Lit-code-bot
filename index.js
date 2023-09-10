@@ -18,17 +18,19 @@ const SHEET_API = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_LINK}/v
 let channelId = ''
 client.on("ready", () => {
     console.log('Logged in as ' + client.user.tag)
-    getSolveStatus('init')
-    channelId = client.channels.cache.get("1115984522522132532")
+    getSolveStatus('init') // For updating the scores before automation
+    channelId = client.channels.cache.get("1136692829410820128")
     
     let now = new Date()
-    let timeLeft = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23,55,0,0) - now
+    let timeLeft = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23,45,0,0) - now
     console.log(timeLeft)
     if (timeLeft < 0) {
         timeLeft += 86400000
     }
-    setTimeout(getSolveStatus, timeLeft)
-    setInterval(getSolveStatus,86400000)
+    setTimeout(() => {
+        getSolveStatus();
+        setInterval(getSolveStatus,86400000);
+    }, timeLeft);
 }
 
     
@@ -39,7 +41,7 @@ client.on("messageCreate", msg => {
         let words = msg.content.split(' ')
         //console.log(words)
         if (words[0] === "GetScore") {
-            let profileUrl = 'https://faisal-leetcode-api.cyclic.app/' + words[1];
+            let profileUrl = 'https://leetcode-stats-api.herokuapp.com/' + words[1];
 
             // Find the number of problems solved by the member
             
@@ -96,24 +98,23 @@ async function getSolveStatus(time) {
     let statusUpdate = ""
     let memberdata = await fetch(SHEET_API)
     let memberJsonData = await memberdata.json()
-    //console.log(memberJsonData)
+    
     for (let i = 1; i < memberJsonData['values'].length; i++) {
         intializeJson()
         let username = memberJsonData['values'][i][2]
         let fullName = memberJsonData['values'][i][1]
-        // console.log(username)
-        let profileUrl = 'https://faisal-leetcode-api.cyclic.app/' + username
+        
+        let profileUrl = 'https://leetcode-stats-api.herokuapp.com/' + username
 
         // Find the number of problems solved by the member
         let data = await fetch(profileUrl)
         let jsonData = await data.json()
         let score = jsonData['totalSolved']
-        //console.log(score)
-        // console.log(fullName + ' solved ' + score + ' problems till now.')
-        
-        // console.log(sheetScore + ' ' + score)
+ 
+        // Check if user exists
         if (scoreObject.hasOwnProperty(username)) {
             let sheetScore = scoreObject[username]['score']
+            // If the user has solved more problems after initial run of the function (init)
             if (score > sheetScore) {
                 if (sheetScore != 0) {
                     statusUpdate += `${fullName} solved ` + (score-sheetScore) + ` problems.\n`
@@ -122,14 +123,15 @@ async function getSolveStatus(time) {
                 
             }
         } else {
-            //console.log(typeof(score))
+            // If user does not exist add them
             if (typeof(score) == 'number') {
                 setTimeout(addUser, 1000, username,fullName,score)
             }
         }
     }
     if (time === "init") {
-        
+        // Update the scores when the bot runs for the first time
+        updateScore(namesToUpdate)
     } else if (statusUpdate === "") {
         channelId.send("No one solved a problem today :(")
     } else {
